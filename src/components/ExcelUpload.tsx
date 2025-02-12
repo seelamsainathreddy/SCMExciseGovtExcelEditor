@@ -4,7 +4,8 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import Suggestions from './Suggestions';
-import allSuggestions from '../assets/govtBrandNames.json';
+import allSuggestions from '../assets/Brand_Names_Govt.json';
+import localCodeMap from '../assets/name_code_mapping.json';
 
 const ExcelUpload: React.FC = () => {
   const [data, setData] = useState<any[]>([]);
@@ -143,11 +144,19 @@ const ExcelUpload: React.FC = () => {
     if (!selectedCell) return;
     
     setData(prevData => 
-      prevData.map((row, index) => 
-        index === selectedCell.rowIndex 
-          ? {...row, [selectedCell.columnId]: selectedValue} 
-          : row
-      )
+      prevData.map((row, index) => {
+        if (index === selectedCell.rowIndex) {
+          // Get item code from localCodeMap
+          const itemCode = localCodeMap[selectedValue as keyof typeof localCodeMap] || 'DEFAULT_CODE';
+          
+          return {
+            ...row,
+            [selectedCell.columnId]: selectedValue, // Update brand name
+            'Local Item Code': itemCode // Update item code column
+          };
+        }
+        return row;
+      })
     );
     setIsSuggestionsVisible(false);
   };
